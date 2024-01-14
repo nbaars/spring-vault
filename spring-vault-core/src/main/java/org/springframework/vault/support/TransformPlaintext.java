@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 the original author or authors.
+ * Copyright 2020-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.vault.support;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -150,7 +151,7 @@ public class TransformPlaintext {
 
 	@Override
 	public int hashCode() {
-		int result = ObjectUtils.nullSafeHashCode(this.plaintext);
+		int result = Arrays.hashCode(this.plaintext);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(this.context);
 		return result;
 	}

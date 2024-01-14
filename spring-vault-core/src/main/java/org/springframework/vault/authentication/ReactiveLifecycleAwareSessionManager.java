@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -395,7 +395,7 @@ public class ReactiveLifecycleAwareSessionManager extends LifecycleAwareSessionM
 
 	private OneShotTrigger createTrigger(VaultToken token) {
 
-		return new OneShotTrigger(getRefreshTrigger().nextExecutionTime((LoginToken) token));
+		return new OneShotTrigger(getRefreshTrigger().nextExecution((LoginToken) token));
 	}
 
 	private static Mono<VaultToken> augmentWithSelfLookup(WebClient webClient, VaultToken token) {

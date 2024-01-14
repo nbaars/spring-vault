@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,12 +111,12 @@ public class ReactiveVaultClients {
 
 			CustomCodecs cc = configurer.customCodecs();
 
-			cc.decoder(new ByteArrayDecoder());
-			cc.decoder(new Jackson2JsonDecoder());
-			cc.decoder(StringDecoder.allMimeTypes());
+			cc.register(new ByteArrayDecoder());
+			cc.register(new Jackson2JsonDecoder());
+			cc.register(StringDecoder.allMimeTypes());
 
-			cc.encoder(new ByteArrayEncoder());
-			cc.encoder(new Jackson2JsonEncoder());
+			cc.register(new ByteArrayEncoder());
+			cc.register(new Jackson2JsonEncoder());
 
 		}).build();
 

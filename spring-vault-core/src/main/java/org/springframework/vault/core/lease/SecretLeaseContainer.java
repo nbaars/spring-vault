@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.BiConsumer;
 
 import org.apache.commons.logging.Log;
@@ -411,6 +411,9 @@ public class SecretLeaseContainer extends SecretLeaseEventPublisher
 			else if (renewalScheduler.isLeaseRotateOnly(lease, requestedSecret)) {
 				scheduleLeaseRotation(requestedSecret, lease, renewalScheduler);
 			}
+			else if (lease.hasLeaseId()) {
+				renewalScheduler.associateLease(lease);
+			}
 
 			callback.accept(secrets, lease);
 		}
@@ -503,10 +506,15 @@ public class SecretLeaseContainer extends SecretLeaseEventPublisher
 				for (Entry<RequestedSecret, LeaseRenewalScheduler> entry : this.renewals.entrySet()) {
 
 					Lease lease = entry.getValue().getLease();
+					Lease previousLease = entry.getValue().getPreviousLease();
 					entry.getValue().disableScheduleRenewal();
 
 					if (lease != null && lease.hasLeaseId()) {
 						doRevokeLease(entry.getKey(), lease);
+					}
+
+					if (previousLease != null && previousLease.hasLeaseId()) {
+						doRevokeLease(entry.getKey(), previousLease);
 					}
 				}
 				this.renewals.clear();
@@ -845,12 +853,19 @@ public class SecretLeaseContainer extends SecretLeaseEventPublisher
 	 */
 	static class LeaseRenewalScheduler {
 
+		private static final AtomicReferenceFieldUpdater<LeaseRenewalScheduler, Lease> CURRENT_UPDATER = AtomicReferenceFieldUpdater
+			.newUpdater(LeaseRenewalScheduler.class, Lease.class, "currentLeaseRef");
+
 		@SuppressWarnings("FieldMayBeFinal") // allow setting via reflection.
 		private static Log logger = LogFactory.getLog(LeaseRenewalScheduler.class);
 
 		private final TaskScheduler taskScheduler;
 
-		final AtomicReference<Lease> currentLeaseRef = new AtomicReference<>();
+		@Nullable
+		volatile Lease currentLeaseRef;
+
+		@Nullable
+		volatile Lease previousLeaseRef;
 
 		final Map<Lease, ScheduledFuture<?>> schedules = new ConcurrentHashMap<>();
 
@@ -885,8 +900,8 @@ public class SecretLeaseContainer extends SecretLeaseEventPublisher
 				}
 			}
 
-			Lease currentLease = this.currentLeaseRef.get();
-			this.currentLeaseRef.set(lease);
+			Lease currentLease = CURRENT_UPDATER.get(this);
+			CURRENT_UPDATER.set(this, lease);
 
 			if (currentLease != null) {
 				cancelSchedule(currentLease);
@@ -899,7 +914,7 @@ public class SecretLeaseContainer extends SecretLeaseEventPublisher
 
 					LeaseRenewalScheduler.this.schedules.remove(lease);
 
-					if (LeaseRenewalScheduler.this.currentLeaseRef.get() != lease) {
+					if (CURRENT_UPDATER.get(LeaseRenewalScheduler.this) != lease) {
 						logger.debug("Current lease has changed. Skipping renewal");
 						return;
 					}
@@ -919,7 +934,7 @@ public class SecretLeaseContainer extends SecretLeaseEventPublisher
 						// Renew lease may call scheduleRenewal(…) with a different lease
 						// Id to alter set up its own renewal schedule. If it's the old
 						// lease, then renewLease() outcome controls the current LeaseId.
-						LeaseRenewalScheduler.this.currentLeaseRef.compareAndSet(lease, renewLease.renewLease(lease));
+						CURRENT_UPDATER.compareAndSet(LeaseRenewalScheduler.this, lease, renewLease.renewLease(lease));
 					}
 					catch (Exception e) {
 						logger.error(String.format("Cannot renew lease %s", lease.getLeaseId()), e);
@@ -931,6 +946,10 @@ public class SecretLeaseContainer extends SecretLeaseEventPublisher
 					new OneShotTrigger(getRenewalSeconds(lease, minRenewal, expiryThreshold)));
 
 			this.schedules.put(lease, scheduledFuture);
+		}
+
+		void associateLease(Lease lease) {
+			CURRENT_UPDATER.set(this, lease);
 		}
 
 		private void cancelSchedule(Lease lease) {
@@ -952,7 +971,8 @@ public class SecretLeaseContainer extends SecretLeaseEventPublisher
 		 */
 		void disableScheduleRenewal() {
 
-			this.currentLeaseRef.set(null);
+			// capture the previous lease to revoke it
+			this.previousLeaseRef = CURRENT_UPDATER.getAndSet(this, null);
 			Set<Lease> leases = new HashSet<>(this.schedules.keySet());
 
 			for (Lease lease : leases) {
@@ -985,7 +1005,12 @@ public class SecretLeaseContainer extends SecretLeaseEventPublisher
 
 		@Nullable
 		public Lease getLease() {
-			return this.currentLeaseRef.get();
+			return CURRENT_UPDATER.get(this);
+		}
+
+		@Nullable
+		public Lease getPreviousLease() {
+			return this.previousLeaseRef;
 		}
 
 		private boolean isLeaseRotateOnly(Lease lease, RequestedSecret requestedSecret) {
@@ -1070,6 +1095,8 @@ public class SecretLeaseContainer extends SecretLeaseEventPublisher
 	 */
 	static class OneShotTrigger implements Trigger {
 
+		private static final Clock CLOCK = Clock.systemDefaultZone();
+
 		private static final AtomicIntegerFieldUpdater<OneShotTrigger> UPDATER = AtomicIntegerFieldUpdater
 			.newUpdater(OneShotTrigger.class, "status");
 
@@ -1089,11 +1116,8 @@ public class SecretLeaseContainer extends SecretLeaseEventPublisher
 		@Nullable
 		@Override
 		public Instant nextExecution(TriggerContext triggerContext) {
-			if (UPDATER.compareAndSet(this, STATUS_ARMED, STATUS_FIRED)) {
-				return Instant.ofEpochMilli(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(this.seconds));
-			}
-
-			return null;
+			return UPDATER.compareAndSet(this, STATUS_ARMED, STATUS_FIRED) ? CLOCK.instant().plusSeconds(this.seconds)
+					: null;
 		}
 
 	}

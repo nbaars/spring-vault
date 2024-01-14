@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 the original author or authors.
+ * Copyright 2017-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.vault.core.lease;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -488,9 +489,8 @@ class SecretLeaseContainerUnitTests {
 		ArgumentCaptor<Trigger> captor = ArgumentCaptor.forClass(Trigger.class);
 		verify(this.taskScheduler).schedule(any(Runnable.class), captor.capture());
 
-		Date nextExecutionTime = captor.getValue().nextExecutionTime(null);
-		assertThat(nextExecutionTime).isBetween(new Date(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(35)),
-				new Date(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(41)));
+		Instant nextExecutionTime = captor.getValue().nextExecution(null);
+		assertThat(nextExecutionTime).isBetween(Instant.now().plusSeconds(35), Instant.now().plusSeconds(41));
 	}
 
 	@Test
@@ -536,13 +536,11 @@ class SecretLeaseContainerUnitTests {
 		ArgumentCaptor<Trigger> captor = ArgumentCaptor.forClass(Trigger.class);
 		verify(this.taskScheduler, times(2)).schedule(any(Runnable.class), captor.capture());
 
-		assertThat(captor.getAllValues().get(0).nextExecutionTime(null)).isBetween(
-				new Date(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(35)),
-				new Date(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(41)));
+		assertThat(captor.getAllValues().get(0).nextExecution(null)).isBetween(Instant.now().plusSeconds(31),
+				Instant.now().plusSeconds(41));
 
-		assertThat(captor.getAllValues().get(1).nextExecutionTime(null)).isBetween(
-				new Date(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(9)),
-				new Date(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(11)));
+		assertThat(captor.getAllValues().get(1).nextExecution(null)).isBetween(Instant.now().plusSeconds(9),
+				Instant.now().plusSeconds(11));
 	}
 
 	@Test
@@ -557,8 +555,8 @@ class SecretLeaseContainerUnitTests {
 
 		Trigger trigger = captor.getValue();
 
-		assertThat(trigger.nextExecutionTime(null)).isNotNull();
-		assertThat(trigger.nextExecutionTime(null)).isNull();
+		assertThat(trigger.nextExecution(null)).isNotNull();
+		assertThat(trigger.nextExecution(null)).isNull();
 	}
 
 	@Test
@@ -630,6 +628,27 @@ class SecretLeaseContainerUnitTests {
 
 		verify(this.leaseListenerAdapter, never()).onLeaseEvent(any(BeforeSecretLeaseRevocationEvent.class));
 		verify(this.leaseListenerAdapter, never()).onLeaseEvent(any(AfterSecretLeaseRevocationEvent.class));
+	}
+
+	@Test
+	void shouldRevokeSecretsOnDestroy() throws Exception {
+
+		VaultResponse secrets = new VaultResponse();
+		secrets.setData(Collections.singletonMap("key", (Object) "value"));
+		secrets.setLeaseId("1234");
+		secrets.setLeaseDuration(1000);
+
+		when(this.vaultOperations.read(this.requestedSecret.getPath())).thenReturn(secrets);
+
+		this.secretLeaseContainer.addRequestedSecret(this.requestedSecret);
+		this.secretLeaseContainer.start();
+		this.secretLeaseContainer.stop();
+
+		this.secretLeaseContainer.destroy();
+
+		verify(this.leaseListenerAdapter).onLeaseEvent(any(SecretLeaseCreatedEvent.class));
+		verify(this.leaseListenerAdapter).onLeaseEvent(any(BeforeSecretLeaseRevocationEvent.class));
+		verify(this.leaseListenerAdapter).onLeaseEvent(any(AfterSecretLeaseRevocationEvent.class));
 	}
 
 	@Test

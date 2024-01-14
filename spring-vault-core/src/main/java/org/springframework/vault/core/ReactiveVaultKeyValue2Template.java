@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ class ReactiveVaultKeyValue2Template extends ReactiveVaultKeyValue2Accessor impl
 		return doRead(path, Map.class, (response, data) -> {
 
 			VaultResponse vaultResponse = new VaultResponse();
-			VaultResponse.updateWithoutData(vaultResponse, response);
+			vaultResponse.applyMetadata(response);
 			vaultResponse.setData(data);
 
 			return vaultResponse;

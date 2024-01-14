@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2023 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -213,6 +213,15 @@ public interface ReactiveVaultTransitOperations {
 	 * @see #rotate(String)
 	 */
 	Mono<String> rewrap(String keyName, String ciphertext, VaultTransitContext transitContext);
+
+	/**
+	 * Rewrap the provided batch of cipher text using the latest version of the named key.
+	 * @param batchRequest a list of {@link Ciphertext} which includes cipher text and a
+	 * context
+	 * @return the rewrapped result in the order of {@code batchRequest} ciphertexts.
+	 * @see #rewrap(String, String)
+	 */
+	Flux<VaultEncryptionResult> rewrap(String keyName, List<Ciphertext> batchRequest);
 
 	/**
 	 * Create a HMAC using {@code keyName} of given {@link Plaintext} using the default

@@ -13,25 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.vault.repository.convert;
-
-import java.util.Map;
-
-import org.springframework.data.convert.TypeMapper;
+package org.springframework.vault.support;
 
 /**
- * Vault-specific {@link TypeMapper} exposing that {@link SecretDocument}s might contain a
- * type key.
+ * Value object to bind Vault HTTP PKI issue certificate API responses.
  *
- * @author Mark Paluch
- * @since 2.0
+ * @author Nanne Baars
+ * @since 3.1
  */
-public interface VaultTypeMapper extends TypeMapper<Map<String, Object>> {
-
-	/**
-	 * Returns whether the given {@code key} is the type key.
-	 * @return {@literal true} if the {@code key} is the type key.
-	 */
-	boolean isTypeKey(String key);
+public class VaultIssuerCertificateRequestResponse extends VaultResponseSupport<Certificate> {
 
 }

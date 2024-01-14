@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ import org.springframework.vault.support.VaultResponseSupport;
  *
  * @author Mark Paluch
  * @author Younghwan Jang
- * @since 2.1
  * @see KeyValueBackend#KV_1
+ * @since 2.1
  */
 class VaultKeyValue1Template extends VaultKeyValueAccessor implements VaultKeyValueOperations {
 
@@ -67,8 +67,9 @@ class VaultKeyValue1Template extends VaultKeyValueAccessor implements VaultKeyVa
 		Assert.hasText(path, "Path must not be empty");
 
 		return doRead(path, Map.class, (response, data) -> {
+
 			VaultResponse vaultResponse = new VaultResponse();
-			VaultResponse.updateWithoutData(vaultResponse, response);
+			vaultResponse.applyMetadata(response);
 			vaultResponse.setData(data);
 
 			return vaultResponse;

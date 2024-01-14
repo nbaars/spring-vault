@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 the original author or authors.
+ * Copyright 2020-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.lang.Nullable;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -47,7 +48,7 @@ public class DurationParser {
 	@Nullable
 	public static Duration parseDuration(String duration) {
 
-		if (StringUtils.isEmpty(duration)) {
+		if (ObjectUtils.isEmpty(duration)) {
 			return null;
 		}
 

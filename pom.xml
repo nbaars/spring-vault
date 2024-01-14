@@ -4,7 +4,7 @@
 
 	<groupId>org.springframework.vault</groupId>
 	<artifactId>spring-vault-parent</artifactId>
-	<version>3.1.0-SNAPSHOT</version>
+	<version>3.2.0-SNAPSHOT</version>
 
 	<name>Spring Vault</name>
 	<description>Parent project for Spring Vault</description>
@@ -19,30 +19,30 @@
 
 	<properties>
 		<antora.version>0.0.3</antora.version>
-		<assertj-core.version>3.24.2</assertj-core.version>
-		<aws-java-sdk.version>2.20.152</aws-java-sdk.version>
+		<assertj-core.version>3.25.1</assertj-core.version>
+		<aws-java-sdk.version>2.21.46</aws-java-sdk.version>
 		<bcpkix-jdk15on.version>1.70</bcpkix-jdk15on.version>
 		<google-api-services-iam.version>v1-rev20221013-2.0.0
 		</google-api-services-iam.version>
 		<google-cloud-iamcredentials.version>2.24.0</google-cloud-iamcredentials.version>
-		<google-auth-library-oauth2-http.version>1.19.0
+		<google-auth-library-oauth2-http.version>1.20.0
 		</google-auth-library-oauth2-http.version>
-		<httpclient5.version>5.2.1</httpclient5.version>
-		<httpcore5.version>5.2.3</httpcore5.version>
-		<jackson-databind.version>2.15.2</jackson-databind.version>
-		<jetty-reactive-httpclient.version>4.0.0</jetty-reactive-httpclient.version>
+		<httpclient5.version>5.3</httpclient5.version>
+		<httpcore5.version>5.2.4</httpcore5.version>
+		<jackson-databind.version>2.15.3</jackson-databind.version>
+		<jetty-reactive-httpclient.version>4.0.1</jetty-reactive-httpclient.version>
 		<json-path.version>2.8.0</json-path.version>
-		<junit.version>5.10.0</junit.version>
+		<junit.version>5.10.1</junit.version>
 		<kotlin.version>1.8.22</kotlin.version>
 		<kotlin-coroutines.version>1.7.3</kotlin-coroutines.version>
 		<mockk.version>1.13.7</mockk.version>
-		<mockito-core.version>5.5.0</mockito-core.version>
-		<netty.version>4.1.98.Final</netty.version>
+		<mockito-core.version>5.8.0</mockito-core.version>
+		<netty.version>4.1.104.Final</netty.version>
 		<okhttp3.version>3.14.9</okhttp3.version>
-		<spring.version>6.1.0-M5</spring.version>
-		<spring-data-bom.version>2023.1.0-M3</spring-data-bom.version>
-		<spring-security-bom.version>6.2.0-M3</spring-security-bom.version>
-		<reactor.version>2023.0.0-M3</reactor.version>
+		<spring.version>6.1.3</spring.version>
+		<spring-data-bom.version>2023.1.2</spring-data-bom.version>
+		<spring-security-bom.version>6.2.0</spring-security-bom.version>
+		<reactor.version>2023.0.2</reactor.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>17</java.version>
@@ -93,7 +93,7 @@
 			<name>Apache License, Version 2.0</name>
 			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
 			<comments>
-				Copyright 2016-2023 the original author or authors.
+				Copyright 2016-2024 the original author or authors.
 
 				Licensed under the Apache License, Version 2.0 (the "License");
 				you may not use this file except in compliance with the License.
@@ -532,7 +532,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.11.0</version>
+					<version>3.12.1</version>
 				</plugin>
 
 				<plugin>
@@ -568,13 +568,13 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.1.2</version>
+					<version>3.2.5</version>
 				</plugin>
 
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
-					<version>3.1.2</version>
+					<version>3.2.5</version>
 				</plugin>
 
 				<plugin>
@@ -586,7 +586,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.6.3</version>
 					<configuration>
 						<locale>en_US</locale>
 						<breakiterator>true</breakiterator>
@@ -601,15 +601,13 @@
 						<doclint>none</doclint>
 						<links>
 							<link>
-								https://docs.spring.io/spring/docs/current/javadoc-api
+								https://docs.spring.io/spring-framework/docs/current/javadoc-api
 							</link>
 							<link>
 								https://docs.spring.io/spring-data/commons/docs/current/api
 							</link>
 							<link>
 								https://docs.spring.io/spring-data/keyvalue/docs/current/api
-							</link>
-							<link>https://docs.spring.io/spring/docs/current/javadoc-api
 							</link>
 							<link>
 								https://docs.spring.io/spring-security/site/docs/current/api
@@ -638,7 +636,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.6.1</version>
 				</plugin>
 
 				<plugin>
@@ -650,7 +648,7 @@
 				<plugin>
 					<groupId>org.jfrog.buildinfo</groupId>
 					<artifactId>artifactory-maven-plugin</artifactId>
-					<version>3.6.1</version>
+					<version>3.6.2</version>
 				</plugin>
 
 				<plugin>
@@ -668,7 +666,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.5.0</version>
 				</plugin>
 
 				<plugin>
@@ -687,7 +685,7 @@
 			<id>springNext</id>
 
 			<properties>
-				<spring.version>6.1.0-SNAPSHOT</spring.version>
+				<spring.version>6.1.4-SNAPSHOT</spring.version>
 			</properties>
 
 			<repositories>
@@ -1000,20 +998,11 @@
 		</profile>
 	</profiles>
 
-	<repositories>
-		<repository>
-			<id>spring-milestone</id>
-			<url>https://repo.spring.io/milestone</url>
-		</repository>
-	</repositories>
-
 	<pluginRepositories>
 		<pluginRepository>
 			<id>spring-plugins-release</id>
 			<url>https://repo.spring.io/plugins-release</url>
 		</pluginRepository>
 	</pluginRepositories>
-
-
 
 </project>

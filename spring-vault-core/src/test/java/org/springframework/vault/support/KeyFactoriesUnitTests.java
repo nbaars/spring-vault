@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import java.security.spec.KeySpec;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.sec.ECPrivateKey;
@@ -58,7 +60,7 @@ class KeyFactoriesUnitTests {
 
 		// Verify against BouncyCastle parser
 		ECPrivateKey ecPrivateKey = ECPrivateKey.getInstance(key.getContent());
-		ASN1Primitive parameters = ecPrivateKey.getParameters();
+		ASN1Object parameters = ecPrivateKey.getParametersObject();
 
 		X9ECParameters curveParameter = X962NamedCurves.getByOID((ASN1ObjectIdentifier) parameters);
 

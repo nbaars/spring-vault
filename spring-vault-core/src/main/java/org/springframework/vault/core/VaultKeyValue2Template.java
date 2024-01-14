@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ class VaultKeyValue2Template extends VaultKeyValue2Accessor implements VaultKeyV
 		return doRead(path, Map.class, (response, data) -> {
 
 			VaultResponse vaultResponse = new VaultResponse();
-			VaultResponse.updateWithoutData(vaultResponse, response);
+			vaultResponse.applyMetadata(response);
 			vaultResponse.setData(data);
 
 			return vaultResponse;
